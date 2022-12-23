@@ -23,7 +23,7 @@ Function Send-ApiCommand([string]$uri) {
 
 
 # Directory that contains all the needed modules
-$modules_dir = "Modules"
+$modules_dir = $PSScriptRoot + "/Modules"
 
 # Registry key that holds the API Access Token
 $reg_key = "HKCU:\SOFTWARE\PowerShell TeslaAPI"
@@ -46,17 +46,24 @@ $reg_val = "access_token"
 # User-Agent for API Calls
 $useragent = 'PowerShell/TeslaAPI Query'
 
+# Base URI for SSO Authenticating
+$uri_sso_base  = 'https://auth.tesla.com/oauth2/v3'
+
 # URI for SSO Authorization
-$uri_sso_auth  = 'https://auth.tesla.com/oauth2/v3/authorize'
+#$uri_sso_auth  = 'https://auth.tesla.com/oauth2/v3/authorize'
+$uri_sso_auth  = $uri_sso_base + '/authorize'
 
 # URI for SSO Bearer Token
-$uri_sso_token = 'https://auth.tesla.com/oauth2/v3/token'
+#$uri_sso_token = 'https://auth.tesla.com/oauth2/v3/token'
+$uri_sso_token  = $uri_sso_base + '/token'
 
 # Base URI for API calls
+$uri_api_base  = 'https://owner-api.teslamotors.com'
 $base_uri_api  = 'https://owner-api.teslamotors.com'
 
 # URI for API Access Token
-$uri_api_token = "$base_uri_api/oauth/token"
+#$uri_api_token = $base_uri_api + '/oauth/token'
+$uri_api_token = $uri_api_base + '/oauth/token'
 
 # Hashtable of required URIs
 $required_uris = @(
@@ -108,6 +115,21 @@ Write-Host "- All URI's are good!" -ForegroundColor Green
 
 
 #
+## Get user's Access, Refresh, and ID Tokens
+#
+
+$tokens = Get-Tokens
+Write-Host
+Write-Host "Access Token:",$tokens.access_token
+Write-Host
+Write-Host "Refresh Token:",$tokens.refresh_token
+Write-Host
+Write-Host "ID Token:",$tokens.id_token
+Write-Host
+
+exit
+
+#
 ## Get API Access Token from Registry if it exists
 #
 Write-Host "- Checking for existing API Access... " -ForegroundColor Green -NoNewline
@@ -127,6 +149,7 @@ else {
     Write-Host "GOOD!" -ForegroundColor Green
 }
 
+exit
 
 #
 ## Authorization header required for API calls
